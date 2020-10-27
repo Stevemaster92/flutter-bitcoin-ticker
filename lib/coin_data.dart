@@ -36,10 +36,21 @@ class CoinData {
   static final String _apiBaseUrl = "https://rest.coinapi.io/v1/exchangerate";
   static final String _apiKey = "<API-key-goes-here>";
 
-  Future<dynamic> getData(String base, String quote) async {
-    http.Response res =
-        await http.get("$_apiBaseUrl/$base/$quote?apikey=$_apiKey");
+  Future<Map<String, String>> getExchangeRates(String currency) async {
+    Map<String, String> rates = Map();
 
-    return jsonDecode(res.body);
+    for (String crypto in cryptoList) {
+      http.Response res =
+          await http.get("$_apiBaseUrl/$crypto/$currency?apikey=$_apiKey");
+
+      if (res.statusCode == 200) {
+        var data = jsonDecode(res.body);
+        rates[crypto] = data["rate"].toStringAsFixed(2);
+      } else {
+        throw "${res.statusCode}: No exchange rates found";
+      }
+    }
+
+    return rates;
   }
 }
